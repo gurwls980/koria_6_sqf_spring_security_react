@@ -120,7 +120,7 @@ function UserLoginPage(props) {
             return;
         }
 
-        localStorage.setItem("accessToken", "Bearer" + signinData.token.accessToken);
+        localStorage.setItem("accessToken", "Bearer " + signinData.token.accessToken);  // Bearer 띄어쓰기 확인!!
         window.location.replace("/");
     }
 

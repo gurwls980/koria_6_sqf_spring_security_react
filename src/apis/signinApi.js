@@ -5,7 +5,12 @@ export const signinApi = async (user) => {
     let signinData = {
         isSuccess: false,
         token: null,
-        errorMessage: ""
+        fieldErrors: [
+            {
+                field: "",
+                defaultMessage: ""
+            }
+        ]
     }
 
     try {//200
@@ -16,6 +21,7 @@ export const signinApi = async (user) => {
         }
     } catch (error) {//400
         const response = error.response;
+        
         signinData = {
             isSuccess: false
         }
