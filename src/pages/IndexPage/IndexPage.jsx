@@ -85,6 +85,11 @@ const profileImgBox = css`
     width: 64px;
     height: 64px;
     box-shadow: 0px 0px 2px #00000088;
+    cursor: pointer;
+    overflow: hidden;
+    & > img {
+        height: 100%;
+    }
 `;
 
 const profileInfo = css`
@@ -115,8 +120,11 @@ function IndexPage(props) {
     // const state = queryClient.getQueryState("accessTokenValidQuery");
 
     const userInfoState = queryClient.getQueryState("userInfoQuery");
+    const accessTokenValidState = queryClient.getQueryState("accessTokenValidQuery");
     // console.log(data);
     // console.log(state);
+    console.log(accessTokenValidState);
+    console.log(userInfoState);
 
     const handleLoginButtonOnClick = () => {
         navigate("/user/login");
@@ -132,31 +140,16 @@ function IndexPage(props) {
             <header css={header}>
                 <input type="search" placeholder='검색어를 입력하세요' />
             </header>
-            {
-                userInfoState.isFetching === "idle" || "loading"
-                ? <></>
-                :
-                <main css={main}>
-                    <div css={leftBox}></div>
-                    {
-                        userInfoState.status === "success" &&
-                        <div css={rightBox}>
-                            <div css={userInfoBox}>
-                                <div css={profileImgBox}>
-                                    <img src="" alt="" />
-                                </div>
-                                <div css={profileInfo}>
-                                    <div>
-                                        <div>{userInfoState.data.data.username}</div>
-                                        <div>{userInfoState.data.data.email}</div>
-                                    </div>
-                                    <button onClick={handleLogoutButtonOnClick}>로그아웃</button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    {
-                        userInfoState.status !== "success" &&
+
+            <main css={main}>
+                <div css={leftBox}></div>
+                {
+                    accessTokenValidState.status !== "success"
+                    ?
+                    accessTokenValidState.status !== "error"
+                    ?
+                    <></>
+                    :
                         <div css={rightBox}>
                             <p>더 안전하고 편리하게 이용하세요</p>
                             <button onClick={handleLoginButtonOnClick}>로그인</button>
@@ -166,9 +159,42 @@ function IndexPage(props) {
                                 <Link to={"/user/join"}>회원가입</Link>
                             </div>
                         </div>
+                    :
+                        <div css={rightBox}>
+                            <div css={userInfoBox}>
+                                <div css={profileImgBox} onClick={() => navigate("/profile")}>
+                                    <img src={userInfoState?.data?.data.img} alt="" />
+                                </div>
+                                <div css={profileInfo}>
+                                    <div>
+                                        <div>{userInfoState.data?.data.username}</div>
+                                        <div>{userInfoState.data?.data.email}</div>
+                                    </div>
+                                    <button onClick={handleLogoutButtonOnClick}>로그아웃</button>
+                                </div>
+                            </div>
+                        </div>
+
+                }
+            </main>
+
+
+            {/* {
+                accessTokenValidState.status === "success" || accessTokenValidState.status === "success"
+                ? <></>
+                :
+                <main css={main}>
+                    <div css={leftBox}></div>
+                    {
+                        userInfoState.status === "success" &&
+                        
+                    }
+                    {
+                        userInfoState.status === "success" &&
+                        
                     }
                 </main>
-            }
+            } */}
             
         </div>
     );

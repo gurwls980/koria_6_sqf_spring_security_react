@@ -1,6 +1,7 @@
 import { css } from '@emotion/react';
 import React, { useState } from 'react';
-import { Link,} from 'react-router-dom';
+import { Link, useNavigate,} from 'react-router-dom';
+import { instance } from '../../apis/util/instance';
 import { signinApi } from '../../apis/signinApi';
 /** @jsxImportSource @emotion/react */
 
@@ -71,6 +72,8 @@ const loginButton = css`
 
 function UserLoginPage(props) {
 
+    const navigate = useNavigate();
+
     const [ inputUser, setInputUser ] = useState ({
         username: "",
         password: "",
@@ -121,7 +124,17 @@ function UserLoginPage(props) {
         }
 
         localStorage.setItem("accessToken", "Bearer " + signinData.token.accessToken);  // Bearer 띄어쓰기 확인!!
-        window.location.replace("/");
+
+        instance.interceptors.request.use(config => {
+            config.headers["Authorization"] = localStorage.getItem("accessToken");
+            return config;
+        });
+        if(window.history.length > 2) {
+            window.history.back(-1);
+            return;
+        }
+        navigate("/");
+        // window.location.replace("/");
     }
 
     return (
