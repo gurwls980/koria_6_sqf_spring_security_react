@@ -152,6 +152,7 @@ function UserJoinPage(props) {
             </div>
             <button css={joinButton} onClick={handleJoinSubmitOnClick}>가입하기</button>
         </div>
+        
     );
 }
 

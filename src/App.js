@@ -7,6 +7,7 @@ import { useQuery } from 'react-query';
 import { instance } from './apis/util/instance';
 import UserProfilePage from './pages/UserProfilePage/UserProfilePage';
 import { useEffect, useState } from 'react';
+import OAuth2JoinPage from './pages/OAuth2JoinPage/OAuth2JoinPage';
 
 function App() {
     // const [refresh, setRefresh] = useState(false);
@@ -106,6 +107,7 @@ function App() {
         <Routes>
             <Route path="/" element={<IndexPage />} />
             <Route path="/user/join" element={<UserJoinPage />} />
+            <Route path="/user/join/oauth2" element={<OAuth2JoinPage />} />
             <Route path="/user/login" element={<UserLoginPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
 
