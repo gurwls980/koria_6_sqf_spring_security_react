@@ -1,6 +1,8 @@
-import { css } from '@emotion/react';
-import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+/** @jsxImportSource @emotion/react */
+import { css } from "@emotion/react";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { oAuth2SignupApi, oauth2MergeApi } from "../../apis/oauth2Api";
 
 const layout = css`
     display: flex;
@@ -22,6 +24,10 @@ const selectMenuBox = css`
     width: 100%;
 
     & > input {
+        display: none;
+    }
+
+    & > label {
         box-sizing: border-box;
         display: flex;
         justify-content: center;
@@ -41,7 +47,6 @@ const selectMenuBox = css`
         border-top-right-radius: 10px;
         border-bottom-right-radius: 10px;
     }
-    
 
     & > input:checked + label {
         background-color: #fafafa;
@@ -102,27 +107,13 @@ const joinButton = css`
     cursor: pointer;
 `;
 
-const loginButton = css`
-    border: none;
-    border-radius: 10px;
-    width: 100%;
-    height: 50px;
-    background-color: #999999;
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-`;
-
 function OAuth2JoinPage(props) {
     const navigate = useNavigate();
-    const searchParams = useSearchParams();
+    const [searchParams] = useSearchParams();
 
-    const [ selectMenu, setSelectMenu ] = useState("merge");
+    const [selectMenu, setSelectMenu] = useState("merge");
 
-    
-
-    const [ inputUser, setInputUser ] = useState({
+    const [inputUser, setInputUser] = useState({
         username: "",
         password: "",
         checkPassword: "",
@@ -130,7 +121,7 @@ function OAuth2JoinPage(props) {
         email: ""
     });
 
-    const [ fieldErrorMessages, setFieldErrorMessages ] = useState ({
+    const [fieldErrorMessages, setFieldErrorMessages] = useState({
         username: <></>,
         password: <></>,
         checkPassword: <></>,
@@ -138,7 +129,21 @@ function OAuth2JoinPage(props) {
         email: <></>,
     });
 
-    const handleSelectMenuOnChange = (e) => {
+    const handleSeletMenuOnChange = (e) => {
+        setInputUser({
+            username: "",
+            password: "",
+            checkPassword: "",
+            name: "",
+            email: ""
+        });
+        setFieldErrorMessages({
+            username: <></>,
+            password: <></>,
+            checkPassword: <></>,
+            name: <></>,
+            email: <></>,
+        })
         setSelectMenu(e.target.value);
     }
 
@@ -156,13 +161,36 @@ function OAuth2JoinPage(props) {
             oauth2Name: searchParams.get("oAuth2Name"),
             provider: searchParams.get("provider"),
         }
+        const mergeData = await oauth2MergeApi(mergeUser);
+        if(!mergeData.isSuccess) {
+            if(mergeData.errorStatus === "loginError") {
+                alert(mergeData.error);
+                return;
+            }
+            if(mergeData.errorStatus === "fieldError") {
+                showFieldErrorMessage(mergeData.error);
+                return;
+            }
+        }
+        alert("계정 통합이 완료되었습니다.");
+        navigate("/user/login");
     }
 
     const handleJoinSubmitOnClick = async () => {
+        const joinUser = {
+            ...inputUser,
+            oauth2Name: searchParams.get("oAuth2Name"),
+            provider: searchParams.get("provider"),
+        }
 
+        const joinData = await oAuth2SignupApi(joinUser);
+        if(!joinData.isSuccess) {
+            showFieldErrorMessage(joinData.fieldErrors);
+            return;
+        }
+        alert("회원가입이 완료되었습니다.");
+        navigate("/user/login");
     }
-
-    
 
     const showFieldErrorMessage = (fieldErrors) => {
         let EmptyFieldErrors = {
@@ -171,9 +199,9 @@ function OAuth2JoinPage(props) {
             checkPassword: <></>,
             name: <></>,
             email: <></>,
-        }
+        };
 
-        for(let fieldError of fieldErrors) {
+        for (let fieldError of fieldErrors) {
             EmptyFieldErrors = {
                 ...EmptyFieldErrors,
                 [fieldError.field]: <p>{fieldError.defaultMessage}</p>,
@@ -188,57 +216,57 @@ function OAuth2JoinPage(props) {
             <Link to={"/"}><h1 css={logo}>사이트 로고</h1></Link>
             <div css={selectMenuBox}>
                 <input type="radio" id="merge" name="selectMenu"
-                    onChange={handleSelectMenuOnChange}
+                    onChange={handleSeletMenuOnChange}
                     checked={selectMenu === "merge"} value="merge" />
                 <label htmlFor="merge">계정통합</label>
 
                 <input type="radio" id="join" name="selectMenu"
-                    onChange={handleSelectMenuOnChange}
+                    onChange={handleSeletMenuOnChange}
                     checked={selectMenu === "join"} value="join" />
                 <label htmlFor="join">회원가입</label>
             </div>
             {
-                selectMenu ==="merge"
-                ?
-                <>
-                    <div css={joinInfoBox}>
-                        <div>
-                            <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디'/>
-                            {fieldErrorMessages.username}
+                selectMenu === "merge"
+                    ?
+                    <>
+                        <div css={joinInfoBox}>
+                            <div>
+                                <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디' />
+                                {fieldErrorMessages.username}
+                            </div>
+                            <div>
+                                <input type="password" name='password' onChange={handleInputUserOnChange} value={inputUser.password} placeholder='비밀번호' />
+                                {fieldErrorMessages.password}
+                            </div>
                         </div>
-                        <div>
-                            <input type="password" name='password' onChange={handleInputUserOnChange} value={inputUser.password} placeholder='비밀번호'/>
-                            {fieldErrorMessages.password}
+                        <button css={joinButton} onClick={handleMergeSubmitOnClick}>통합하기</button>
+                    </>
+                    :
+                    <>
+                        <div css={joinInfoBox}>
+                            <div>
+                                <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디' />
+                                {fieldErrorMessages.username}
+                            </div>
+                            <div>
+                                <input type="password" name='password' onChange={handleInputUserOnChange} value={inputUser.password} placeholder='비밀번호' />
+                                {fieldErrorMessages.password}
+                            </div>
+                            <div>
+                                <input type="password" name='checkPassword' onChange={handleInputUserOnChange} value={inputUser.checkPassword} placeholder='비밀번호 확인' />
+                                {fieldErrorMessages.checkPassword}
+                            </div>
+                            <div>
+                                <input type="text" name='name' onChange={handleInputUserOnChange} value={inputUser.name} placeholder='성명' />
+                                {fieldErrorMessages.name}
+                            </div>
+                            <div>
+                                <input type="email" name='email' onChange={handleInputUserOnChange} value={inputUser.email} placeholder='이메일주소' />
+                                {fieldErrorMessages.email}
+                            </div>
                         </div>
-                    </div>
-                    <button css={joinButton} onClick={handleJoinSubmitOnClick}>통합하기</button>
-                </>
-                :
-                <>
-                    <div css={joinInfoBox}>
-                        <div>
-                            <input type="text" name='username' onChange={handleInputUserOnChange} value={inputUser.username} placeholder='아이디'/>
-                            {fieldErrorMessages.username}
-                        </div>
-                        <div>
-                            <input type="password" name='password' onChange={handleInputUserOnChange} value={inputUser.password} placeholder='비밀번호'/>
-                            {fieldErrorMessages.password}
-                        </div>
-                        <div>
-                            <input type="password" name='checkPassword' onChange={handleInputUserOnChange} value={inputUser.checkPassword} placeholder='비밀번호 확인'/>
-                            {fieldErrorMessages.checkPassword}
-                        </div>
-                        <div>
-                            <input type="text" name='name' onChange={handleInputUserOnChange} value={inputUser.name} placeholder='성명'/>
-                            {fieldErrorMessages.name}
-                        </div>
-                        <div>
-                            <input type="email" name='email' onChange={handleInputUserOnChange} value={inputUser.email} placeholder='이메일'/>
-                            {fieldErrorMessages.email}
-                        </div>
-                    </div>
                         <button css={joinButton} onClick={handleJoinSubmitOnClick}>가입하기</button>
-                </>
+                    </>
             }
         </div>
     );

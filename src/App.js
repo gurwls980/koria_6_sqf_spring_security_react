@@ -1,4 +1,3 @@
-import './App.css';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import IndexPage from './pages/IndexPage/IndexPage';
 import UserJoinPage from './pages/UserJoinPage/UserJoinPage';
@@ -8,6 +7,7 @@ import { instance } from './apis/util/instance';
 import UserProfilePage from './pages/UserProfilePage/UserProfilePage';
 import { useEffect, useState } from 'react';
 import OAuth2JoinPage from './pages/OAuth2JoinPage/OAuth2JoinPage';
+import OAuth2LoginPage from './pages/OAuth2LoginPage/OAuth2LoginPage';
 
 function App() {
     // const [refresh, setRefresh] = useState(false);
@@ -32,7 +32,7 @@ function App() {
     const accessTokenValid = useQuery(  // 주로 get요청을 사용할때
         ["accessTokenValidQuery"],  // 키 값, 디펜던시
         async () => {   // 요청 메소드
-            // setRefresh(false);
+            // setAuthRefresh(false);
             // console.log("쿼리에서 요청!!!");
             return await instance.get("/auth/access", {
                 params: {
@@ -51,8 +51,8 @@ function App() {
             onSuccess: response => {
                 const permitAllPaths = ["/user"];
                 for(let permitAllPath of permitAllPaths) {
-                    if (location.pathname.startsWith(permitAllPath)) {
-                        navigate(-1);
+                    if(location.pathname.startsWith(permitAllPath)) {
+                        navigate("/");
                         break;
                     }
                 }
@@ -87,7 +87,7 @@ function App() {
         // onSuccess: response => {
         //     console.log(response);
         // }
-    }
+        }
     );
 
     // console.log(accessTokenValid);
@@ -109,6 +109,7 @@ function App() {
             <Route path="/user/join" element={<UserJoinPage />} />
             <Route path="/user/join/oauth2" element={<OAuth2JoinPage />} />
             <Route path="/user/login" element={<UserLoginPage />} />
+            <Route path="/user/login/oauth2" element={<OAuth2LoginPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
 
             <Route path="/admin/*" element={<></>} />
